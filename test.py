@@ -1,34 +1,39 @@
-# creating a sodoku solver
+import cv2  
+import numpy as np  
 
-class Board:
-    # the __init__ method is like a constructor
-    def __init__(self, board):
-        self.board = board
+video = cv2.VideoCapture("green.mp4")
 
-    def solveBoard(self):
-        # we need to loop through every field of the board
-        testingNumber = 1
-        row = 0
-        while row < len(self.board):
-            field = 0
-            while field < len(self.board[row]):
-                # first check if the field is empty
-                if(self.board[row][field] == 0):
-                    # check if the whole row contains the same number as "testingNumber"
-                    for checkRow in self.board[row]:
-                        print(checkRow)
-                        if(checkRow == testingNumber):
-                            break
-                field += 1
-            row += 1
-            testingNumber += 1
-                
-                    
+out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc('M','J','P','G'), 25.0, (1280,720))
 
+u_green = np.array([90, 255, 255]) 
+l_green = np.array([40, 20, 20]) 
 
+while True: 
+  
+    ret, frame = video.read() 
+  
+    frame = cv2.resize(frame, (1280, 720))
 
-# the board is a two dimensional array
-board1 = Board([[0, 0, 4, 8, 6, 0, 0, 3, 0], [0, 0, 1, 0, 0, 0, 0, 9, 0], [8, 0, 0, 0, 0, 9, 0, 6, 0], [5, 0, 0, 2, 0, 6, 0, 0, 1], [
-               0, 2, 7, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 4, 3, 0, 0, 6], [0, 5, 0, 0, 0, 0, 0, 0, 0], [0, 0, 9, 0, 0, 0, 4, 0, 0], [0, 0, 0, 4, 0, 0, 0, 1, 5]])
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-board1.solveBoard()
+  
+    mask = cv2.inRange(hsv, l_green, u_green) 
+    # maks_inv = cv2.bitwise_not(mask)
+
+    # fg = cv2.bitwise_and(frame, frame, mask=maks_inv)
+    res = cv2.bitwise_and(frame, frame, mask = mask) 
+  
+    f = frame - res
+
+    # for export
+    out.write(f)
+    
+    cv2.imshow("video", frame) 
+    cv2.imshow("mask", f) 
+  
+    if cv2.waitKey(25) == 27: 
+        break 
+  
+video.release() 
+out.release()
+cv2.destroyAllWindows() 
